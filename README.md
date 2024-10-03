@@ -1,5 +1,5 @@
 <p align="center">
-  <img src=".github/domhash_logo.png" width="860" height="852"/>
+  <img src=".github/domhash_logo.png" width="430" height="426"/>
 </p>
 
 # What is DOMHash?
