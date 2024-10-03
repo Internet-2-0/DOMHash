@@ -1,0 +1,6 @@
+*.pyc
+.idea/*
+test.py
+build/*
+dist/*
+domhash.egg*/*
