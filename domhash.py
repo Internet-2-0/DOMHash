@@ -22,6 +22,7 @@ class Parser(argparse.ArgumentParser):
 
     @staticmethod
     def check_args(opts):
+        """ check the arguments to verify that you aren't screwing up """
         found_error = False
         if opts.hashOne and not opts.hashTwo:
             print("You did not pass a secondary hash to compare against")
@@ -33,6 +34,7 @@ class Parser(argparse.ArgumentParser):
 
     @staticmethod
     def optparse():
+        """ self contained argument parser """
         parser = argparse.ArgumentParser()
         pos_args = parser.add_argument_group("Positional Arguments")
         pos_args.add_argument(
@@ -60,9 +62,13 @@ class Parser(argparse.ArgumentParser):
 
 class DomHash(object):
 
+    # version: major.minor.patch.push
     __version = "0.0.0.1"
+    # build type
     __build_type = "beta"
+    # build code name
     __build_code_name = "sylvester"
+    # build language
     __build_language = "Python"
 
     def __init__(self, dom=None):
@@ -70,9 +76,11 @@ class DomHash(object):
 
     @property
     def show_version(self):
+        """ show the build version """
         return f"{self.__build_code_name} v{self.__version}({self.__build_type}) -> {self.__build_language}"
 
     def __verify_dom_content(self):
+        """ verify that the dom content is a type of markdown with regex (can also use XML) """
         expression = re.compile(r"\<.*?\>(.*?)\<.*?\>")
         if expression.search(self.dom) is None:
             raise HtmlHeuristicIssues("Passed dom content did not pass heuristic tests")
@@ -110,6 +118,7 @@ class DomHash(object):
         hash2 = hash2[:min_length]
         matches = sum(1 for a, b in zip(hash1, hash2) if a == b)
         try:
+            # return the match score
             return round((matches / min_length) * 100, 2)
         except ZeroDivisionError:
             raise NoMatchesFound("Total matches returned 0, will not continue")
