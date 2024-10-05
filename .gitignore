@@ -4,3 +4,4 @@ test.py
 build/*
 dist/*
 domhash.egg*/*
+*.html

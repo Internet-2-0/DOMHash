@@ -2,7 +2,6 @@
 
 import re
 import sys
-import base64
 import hashlib
 import argparse
 
@@ -63,7 +62,7 @@ class Parser(argparse.ArgumentParser):
 class DomHash(object):
 
     # version: major.minor.patch.push
-    __version = "0.0.0.1"
+    __version = "0.1.1.2"
     # build type
     __build_type = "beta"
     # build code name
@@ -85,55 +84,56 @@ class DomHash(object):
         if expression.search(self.dom) is None:
             raise HtmlHeuristicIssues("Passed dom content did not pass heuristic tests")
 
-    def update_dom(self, new_dom):
+    def __clean_html(self):
+        """ cleans the HTML content into workable data """
+        self.dom = re.sub(r'<(script|style)[^>]*>.*?</\1>', '', self.dom)
+        self.dom = re.sub(r'<[^>]+>', '', self.dom)
+        self.dom = re.sub(r'&[a-z]+;', ' ', self.dom)
+        self.dom = re.sub(r'\s+', ' ', self.dom).strip()
+
+    def update_dom(self, new_dom, minimum_size=20):
         """ allows the user to dynamically update the dom content """
         self.dom = new_dom
+        self.__clean_html()
+        if len(self.dom) < minimum_size:
+            raise HtmlHeuristicIssues("Not enough data to continue")
 
-    def get_chunk_size(self, base_size=64, scaling_factor=100):
-        """ dynamically gets the chunk size to use for hashing """
-        length = len(self.dom)
-        return base_size + (length // scaling_factor)
-
-    def rolling_hash(self):
-        """ basic rolling hash implementation """
-        hash_value = 0
-        for i, char in enumerate(self.dom):
-            hash_value = (hash_value * 31 + ord(str(char))) % (2**32)
-        return hash_value
+    def tokenize(self, ngrams=5):
+        """ create tokens from tyhe dom content """
+        words = self.dom.split()
+        tokens = [' '.join(words[i:i+ngrams]) for i in range(len(words)-ngrams+1)]
+        return tokens
 
     @staticmethod
     def hash_chunks(chunk):
         """ hash the chunks """
-        try:
-            sha256 = hashlib.sha256(chunk.encode("utf-8")).digest()
-        except AttributeError:
-            sha256 = hashlib.sha256(chunk).digest()
-        return base64.urlsafe_b64encode(sha256).decode("utf-8")[:6]
+        return hashlib.sha256(chunk.encode("utf-8")).hexdigest()
 
     @staticmethod
     def compare_hashes(hash1, hash2):
-        """ compare the two hashes together using a simple comparison algorithm """
-        min_length = min(len(hash1), len(hash2))
-        hash1 = hash1[:min_length]
-        hash2 = hash2[:min_length]
-        matches = sum(1 for a, b in zip(hash1, hash2) if a == b)
-        try:
-            # return the match score
-            return round((matches / min_length) * 100, 2)
-        except ZeroDivisionError:
-            raise NoMatchesFound("Total matches returned 0, will not continue")
+        """ changes the way we compare to using the Jaccard similarity algorithm """
+        test1, test2 = set(hash1), set(hash2)
+        intersection = test1.intersection(test2)
+        union = test1.union(test2)
+        if not union:
+            return 0
+        return len(intersection) / len(union)
+
+    def hash(self):
+        """ implements a `hash` function """
+        return self.generate_fuzzy_hash()
+
+    def digest(self, is_set=True):
+        """ gcreate the digest of the tokens """
+        tokens = self.tokenize(ngrams=5)
+        if is_set:
+            return set(self.hash_chunks(chunk) for chunk in tokens)
+        else:
+            return [self.hash_chunks(chunk) for chunk in tokens]
 
     def generate_fuzzy_hash(self):
-        """ generate the fuzzy hashes from the dom content """
-        if self.dom is None:
-            raise NoDomContent("There has been no dom content initialized")
-        self.__verify_dom_content()
-        max_chunks = 10
-        block_size = self.get_chunk_size()
-        chunks = [self.dom[i:i + block_size] for i in range(0, len(self.dom), block_size)]
-        hashed_chunks = [self.hash_chunks(chunk) for chunk in chunks[:max_chunks]]
-        combined_hash = ''.join(hashed_chunks)
-        return base64.urlsafe_b64encode(hashlib.sha256(combined_hash.encode()).digest()).decode("utf-8")[:64]
+        combined_hash = ''.join(self.digest(is_set=False))
+        return combined_hash[:64] if len(combined_hash) >= 64 else combined_hash.ljust(64, '0')
 
 
 if __name__ == "__main__":
