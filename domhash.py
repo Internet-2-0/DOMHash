@@ -54,6 +54,10 @@ class Parser(argparse.ArgumentParser):
             "-v", "--version", default=False, dest="showVersion", action="store_true",
             help="Print the version number and exit"
         )
+        misc_args.add_argument(
+            "--show-dom", default=False, dest="showDom", action="store_true",
+            help="Print the dom content before hashing"
+        )
 
         return parser.parse_args()
 
@@ -62,7 +66,7 @@ class Parser(argparse.ArgumentParser):
 class DomHash(object):
 
     # version: major.minor.patch.push
-    __version = "0.1.2.3"
+    __version = "0.2.2.4"
     # build type
     __build_type = "beta"
     # build code name
@@ -133,7 +137,9 @@ class DomHash(object):
         else:
             return [self.hash_chunks(chunk) for chunk in tokens]
 
-    def generate_fuzzy_hash(self):
+    def generate_fuzzy_hash(self, show_dom=False):
+        if show_dom:
+            print(self.dom)
         combined_hash = ''.join(self.digest(is_set=False))
         return combined_hash[:64] if len(combined_hash) >= 64 else combined_hash.ljust(64, '0')
 
@@ -150,7 +156,7 @@ if __name__ == "__main__":
             else:
                 if opts.domcontent is not None:
                     dom.update_dom(opts.domcontent)
-                    print(dom.generate_fuzzy_hash())
+                    print(dom.generate_fuzzy_hash(show_dom=opts.showDom))
                 else:
                     if opts.hashOne is not None:
                         print(dom.compare_hashes(opts.hashOne, opts.hashTwo))
