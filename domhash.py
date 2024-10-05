@@ -62,7 +62,6 @@ class Parser(argparse.ArgumentParser):
         return parser.parse_args()
 
 
-
 class DomHash(object):
 
     # version: major.minor.patch.push
