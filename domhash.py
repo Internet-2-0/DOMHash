@@ -62,7 +62,7 @@ class Parser(argparse.ArgumentParser):
 class DomHash(object):
 
     # version: major.minor.patch.push
-    __version = "0.1.1.2"
+    __version = "0.1.2.3"
     # build type
     __build_type = "beta"
     # build code name
@@ -86,6 +86,8 @@ class DomHash(object):
 
     def __clean_html(self):
         """ cleans the HTML content into workable data """
+        if isinstance(self.dom, bytes):
+            self.dom = self.dom.decode()
         self.dom = re.sub(r'<(script|style)[^>]*>.*?</\1>', '', self.dom)
         self.dom = re.sub(r'<[^>]+>', '', self.dom)
         self.dom = re.sub(r'&[a-z]+;', ' ', self.dom)

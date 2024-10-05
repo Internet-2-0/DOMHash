@@ -32,7 +32,7 @@ Misc Arguments:
 $ ./domhash.py "`curl -s https://google.com`"
 DnHlIfDnlumG12o1TIfd8DeJhYQFPDOcWw2zH2zpk3c=
 $ ./domhash.py -h1 "`curl -s https://google.com`" -h2 "`curl -s https://duckduckgo.com`"
-2.28
+0.494949494949495
 ```
 
 To use DOMHash as a library, simply copy the `domhash.py` file over to your location and import it:
@@ -58,10 +58,9 @@ print(hash2)
 results = domhash.compare_hashes(hash1, hash2)
 print(results)
 
-# $ python test.py
-# 8ipnY4uYlcP_36t9lwOepyXVnEF1GVmclsfyuIpmoug=
-# GLgOEM_NeKHS-9HkkzOfOnxUbVTTQzhRbri5F04n7mg=
-# 6.82
+# 97ebc7b4d7f51abcf97256597a2123311c5a114d8cbc341391113caa32c228fd
+# ef4c262edfcacee4f18ebf97f9c095b0fb045653bccb8c342c153cdca71cdab9
+# 0.9375
 ```
 
 You also have the option to install DOMHash as a library and run it that way by running the `setup.py` file like so:
